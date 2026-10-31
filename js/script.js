@@ -12,7 +12,7 @@
    10. Demos: nombre del negocio
    11. Demos: filtros, pestañas y selecciones
    12. Demo inmobiliaria: ficha y galería
-   13. Demo médicos: solicitud de turno
+   13. Demos de turnos y reservas (belleza y espacios)
    14. Demos: pedido con carrito (gastronomía y emprendimientos)
    15. Demo emprendimientos: tipos de emprendimiento
    ========================================================================== */
@@ -27,6 +27,28 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const money = (n) => `$ ${Math.round(n).toLocaleString('es-AR')}`;
+
+  // Pone (o saca) una foto dentro de un bloque .ph. Sin src vuelve al placeholder con su etiqueta.
+  const setPhoto = (el, src, label) => {
+    if (!el) return;
+    let img = el.querySelector('.photo-fill');
+    if (!src) {
+      if (img) img.remove();
+      el.classList.remove('has-photo');
+      if (label !== undefined) el.dataset.label = label;
+      return;
+    }
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'photo-fill';
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      el.prepend(img);
+    }
+    img.src = src;
+    el.classList.add('has-photo');
+  };
   const slug = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 28);
   const escapeHTML = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -303,7 +325,9 @@
       const d = btn.dataset;
       $$('[data-fv]', ficha).forEach((el) => { el.textContent = d[el.dataset.fv] || ''; });
       main.style.setProperty('--ph', d.tint);
-      main.dataset.label = `foto principal: ${d.title.toLowerCase()}`;
+      const cardImg = btn.querySelector('img');
+      setPhoto(main, cardImg && cardImg.getAttribute('src'), `foto principal: ${d.title.toLowerCase()}`);
+      main.setAttribute('aria-label', `Foto principal: ${d.title}`);
       $$('.dm-thumb', ficha).forEach((t, i) => {
         t.setAttribute('aria-pressed', String(i === 0));
         t.style.setProperty('--ph', i === 0 ? d.tint : t.dataset.base);
@@ -325,19 +349,54 @@
     if (cards[0]) fill(cards[0]);
   }
 
-  /* 13. DEMO MÉDICOS: SOLICITUD DE TURNO ------------------------------- */
+  /* 13. DEMOS: TURNOS Y RESERVAS (belleza y espacios) ------------------ */
+  // Grupos opcionales (todos con data-pick): #dm-service, #dm-pro, #dm-days y #dm-slots.
+  // Cada botón de #dm-service puede llevar data-name, data-price, data-unit y data-busy
+  // (horarios ocupados de ese espacio, separados por coma). El botón [data-turno] lleva
+  // data-senia (porcentaje de seña) y data-turno-ok (mensaje, con {resumen} para el detalle).
   const turnoBtn = $('[data-turno]');
   if (turnoBtn) {
+    const picked = (id) => $(`${id} button[aria-pressed="true"]`);
+    const nameOf = (b) => b.dataset.name || b.textContent.trim();
     const update = () => {
-      const day = $('#dm-days button[aria-pressed="true"]');
-      const slot = $('#dm-slots button[aria-pressed="true"]');
-      const when = [day ? day.getAttribute('aria-label') : '', slot ? `a las ${slot.textContent.trim()}` : ''].filter(Boolean).join(' ');
-      $('[data-turno-summary]').textContent = when ? `Elegiste el ${when}.` : 'Elegí un día y un horario.';
-      turnoBtn.dataset.demoMsg = when
-        ? `En tu web, esto enviaría la solicitud de turno para el ${when}, y vos la confirmás por WhatsApp.`
-        : 'Primero elegí un día y un horario.';
+      const svc = picked('#dm-service');
+      const pro = picked('#dm-pro');
+
+      // Los horarios ocupados cambian según el espacio elegido
+      if (svc && svc.dataset.busy !== undefined) {
+        const busy = svc.dataset.busy.split(',').map((s) => s.trim());
+        $$('#dm-slots .dm-slot').forEach((s) => {
+          const time = s.textContent.trim();
+          const isBusy = busy.includes(time);
+          s.disabled = isBusy;
+          s.setAttribute('aria-label', isBusy ? `${time}, ocupado` : time);
+          if (isBusy) s.setAttribute('aria-pressed', 'false');
+        });
+      }
+
+      const day = picked('#dm-days');
+      const slot = picked('#dm-slots');
+      const ready = Boolean(day && slot && (svc || !$('#dm-service')));
+      if (!ready) {
+        $('[data-turno-summary]').textContent = 'Elegí un servicio, un día y un horario.';
+        turnoBtn.dataset.demoMsg = 'Primero elegí todas las opciones para armar la reserva.';
+        return;
+      }
+
+      const what = [svc ? nameOf(svc) : '', pro ? `con ${nameOf(pro)}` : ''].filter(Boolean).join(' ');
+      const when = `el ${day.getAttribute('aria-label')} a las ${slot.textContent.trim()}`;
+      const resumen = `${what} ${when}`.trim();
+      let extra = '';
+      if (svc && svc.dataset.price) {
+        const price = Number(svc.dataset.price);
+        extra = ` Precio: ${money(price)}${svc.dataset.unit ? ` ${svc.dataset.unit}` : ''}.`;
+        const senia = Number(turnoBtn.dataset.senia);
+        if (senia) extra += ` Seña del ${senia}%: ${money(price * senia / 100)}.`;
+      }
+      $('[data-turno-summary]').textContent = `Elegiste ${resumen}.${extra}`;
+      turnoBtn.dataset.demoMsg = (turnoBtn.dataset.turnoOk || 'En tu web, esto enviaría la solicitud de {resumen}.').replace('{resumen}', resumen);
     };
-    $$('#dm-days, #dm-slots').forEach((g) => g.addEventListener('pick', update));
+    $$('#dm-service, #dm-pro, #dm-days, #dm-slots').forEach((g) => g.addEventListener('pick', update));
     update();
   }
 
@@ -418,12 +477,13 @@
       title: 'Algodón que se pone mejor con cada lavado.',
       lead: 'Sábanas, toallas y textiles para la casa, elegidos uno por uno.',
       heroLabel: 'foto: cama tendida con luz de tarde',
+      heroImg: 'assets/images/emp2-hero.webp', tallerImg: 'assets/images/emp2-taller.webp',
       cats: [['sabanas', 'Sábanas'], ['toallas', 'Toallas'], ['deco', 'Deco']],
       story: 'Empezamos vendiendo por Instagram desde casa. Hoy elegimos cada tela pensando en cómo se va a sentir después de muchos lavados.',
       products: [
-        ['Juego percal 2 plazas', 58000, 'sabanas', [['Arena', '#E6DCCB'], ['Salvia', '#D9DECB'], ['Blanco', '#F1EFEA']]],
+        ['Juego percal 2 plazas', 58000, 'sabanas', [['Arena', '#E6DCCB'], ['Salvia', '#D9DECB'], ['Blanco', '#F1EFEA']], 'assets/images/emp2-percal.webp'],
         ['Juego lino lavado', 96000, 'sabanas', [['Crudo', '#E9E1D2'], ['Oliva', '#C9CCB0']]],
-        ['Toallón algodón peinado', 21500, 'toallas', [['Piedra', '#DCD6CB'], ['Rosa seco', '#EAD9CF']]],
+        ['Toallón algodón peinado', 21500, 'toallas', [['Piedra', '#DCD6CB'], ['Rosa seco', '#EAD9CF']], 'assets/images/emp2-toallon.webp'],
         ['Toalla de mano', 9800, 'toallas', null],
         ['Funda de almohadón lino', 12900, 'deco', [['Crudo', '#E9E1D2'], ['Terracota suave', '#E2CDBE']]],
         ['Manta de algodón tejida', 44000, 'deco', null]
@@ -496,17 +556,18 @@
       $('[data-v="title"]').textContent = v.title;
       $('[data-v="lead"]').textContent = v.lead;
       $('[data-v="story"]').textContent = v.story;
-      $('[data-v="hero"]').dataset.label = v.heroLabel;
+      setPhoto($('[data-v="hero"]'), v.heroImg, v.heroLabel);
+      setPhoto($('[data-v="taller"]'), v.tallerImg, 'foto: manos trabajando en el taller');
 
       catsEl.innerHTML = `<button type="button" class="dm-chip" data-f="cat:todo" aria-pressed="true">Todo</button>` +
         v.cats.map(([id, label]) => `<button type="button" class="dm-chip" data-f="cat:${id}" aria-pressed="false">${label}</button>`).join('');
 
-      productsEl.innerHTML = v.products.map(([name, price, cat, colors], i) => {
+      productsEl.innerHTML = v.products.map(([name, price, cat, colors, img], i) => {
         const tint = colors ? colors[0][1] : ['#E8E1D4', '#E2E4D6', '#EBDFD6'][i % 3];
         const sw = colors ? `<div class="dm-swatches" aria-label="Colores">${colors.map(([cn, c], j) =>
           `<button type="button" class="dm-swatch" style="--c:${c}" data-tint="${c}" data-name="${cn}" aria-label="${cn}" aria-pressed="${j === 0}"></button>`).join('')}</div>` : '';
         return `<article class="dm-card" data-item data-cat="${cat}" ${i === 0 ? 'data-part="producto"' : ''}>
-          <div class="ph r-45" style="--ph:${tint}" role="img" aria-label="Foto de ${name}" data-label="foto de producto"></div>
+          <div class="ph r-45${img ? ' has-photo' : ''}" style="--ph:${tint}" role="img" aria-label="Foto de ${name}" data-label="foto de producto">${img ? `<img class="photo-fill" src="${img}" alt="" loading="lazy" decoding="async">` : ''}</div>
           <h4 class="dm-card-title">${name}</h4>
           <span class="dm-price">${money(price)}</span>
           ${sw}

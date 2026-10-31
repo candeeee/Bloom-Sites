@@ -259,6 +259,12 @@ ul, ol { margin: 0; padding: 0; }
   .hero { padding: 120px 0 128px; }
   .hero-lead { font-size: 17.5px; }
 }
+.hero {
+  background-image: url("../assets/images/header.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 /* 5. PIEZAS DE MAQUETA --------------------------------------------------- */
 .browser {
@@ -291,6 +297,11 @@ ul, ol { margin: 0; padding: 0; }
   transition: background-color .4s var(--ease);
 }
 .ph::after { content: attr(data-label); position: absolute; left: 8px; bottom: 6px; right: 8px; font: 500 9px/1.25 var(--sans); color: rgba(47,48,43,.55); }
+/* Fotos reales: reemplazan a los .ph (ver README, sección "Fotos") */
+.photo { display: block; width: 100%; height: auto; object-fit: cover; border-radius: 6px; background: var(--ph, #E8E2D5); }
+.photo-fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ph.has-photo::after { display: none; }
+.dm-person .photo { border-radius: 50%; }
 .ph-linen {
   --ph: #E9E2D4;
   background-image:
@@ -737,6 +748,7 @@ ul, ol { margin: 0; padding: 0; }
 .dm-slots { display: flex; flex-wrap: wrap; gap: 6px; }
 .dm-slot { min-height: 40px; min-width: 64px; border: 1px solid var(--line); background: var(--white); border-radius: 999px; font-size: 13px; }
 .dm-slot[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.dm-slot:disabled { opacity: .45; text-decoration: line-through; cursor: not-allowed; }
 
 .dm-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 14px; }
 .dm-tabs::-webkit-scrollbar { display: none; }
@@ -803,6 +815,8 @@ ul, ol { margin: 0; padding: 0; }
 /* Detalles por rubro dentro de la demo */
 .rubro-gastronomia .dm .dm-h1, .rubro-gastronomia .dm .dm-h2 { font-style: italic; font-weight: 340; }
 .rubro-abogados .dm .dm-h1 { font-weight: 330; }
+.rubro-belleza .dm .dm-h1, .rubro-belleza .dm .dm-h2 { font-style: italic; font-weight: 340; }
+.rubro-espacios .dm .dm-h1 { font-family: var(--sans); font-weight: 600; letter-spacing: -0.03em; }
 .rubro-empresas .dm .dm-h1 { font-family: var(--sans); font-weight: 600; letter-spacing: -0.03em; }
 
 /* 16. RUBROS: QUÉ PUEDE RESOLVER Y CIERRE -------------------------------- */

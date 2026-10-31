@@ -1,3 +1,3 @@
-Acá van las fotos del sitio (por ejemplo tu retrato para la sección "Sobre Bloom").
-Los archivos og-*.png son las imágenes que aparecen al compartir cada página en redes y WhatsApp (1200x630).
-Ver README.md, sección "Fotos", para reemplazar los placeholders por imágenes reales.
+Acá están las fotos del sitio (WebP) y las imágenes para compartir en redes.
+Los archivos og-*.png son las que aparecen al compartir cada página en redes y WhatsApp (1200x630).
+Ver README.md, sección "Fotos", para cambiar o sumar imágenes.

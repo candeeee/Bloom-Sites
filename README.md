@@ -9,7 +9,8 @@ Para verlo en tu compu, abrí `index.html` en el navegador.
 index.html              Presentación de Bloom: qué hace, rubros, cómo trabaja, sobre Bloom y contacto
 inmobiliarias.html      Una página por rubro, con demostración interactiva
 abogados.html
-medicos.html
+belleza.html            Belleza y bienestar (uñas, pestañas, cejas, peluquerías): turnos con seña
+espacios.html           Espacios y reservas (canchas, salones, salas): horarios libres y reserva
 gastronomia.html
 empresas.html
 emprendimientos.html
@@ -38,18 +39,25 @@ En `index.html`, sección "Sobre Bloom", hay un bloque marcado con instrucciones
 tu nombre y un texto breve.
 
 ### 3. Fotos
-Las imágenes de las maquetas son placeholders hechos con CSS (bloques de color con una etiqueta que dice
-qué foto iría). Para poner una foto real, reemplazá el bloque por una imagen:
+Las fotos de las demostraciones ya están cargadas, en WebP, dentro de `assets/images/`. Los nombres
+empiezan con el rubro (`inmo-`, `abog-`, `bel-`, `esp-`, `gas-`, `emp-`, `emp2-`). `header.webp` es el fondo
+de la portada del index. Para cambiar una, reemplazá el archivo con el mismo nombre o editá el `src` en el HTML.
+
+Para sumar una foto nueva donde todavía hay un bloque de color (`class="ph ..."`), reemplazalo por:
 
 ```html
-<!-- antes -->
-<div class="ph r-43" style="--ph:#DCE0CF" role="img" aria-label="..." data-label="..."></div>
-<!-- después -->
-<img src="assets/images/mi-foto.webp" alt="Descripción de lo que se ve" width="800" height="600" loading="lazy">
+<img class="photo r-43" src="assets/images/mi-foto.webp" alt="Descripción de lo que se ve" width="800" height="600" loading="lazy">
 ```
 
-Recomendaciones: formato WebP, ancho máximo 1600 px, `alt` que describa la imagen, `width` y `height`
-reales, y `loading="lazy"` en todas las que no estén arriba de todo.
+Con `r-43` (4:3), `r-11` (cuadrada), `r-45` (4:5), `r-32` (3:2) o `r-169` (16:9) según el lugar. La foto se recorta
+sola para llenarlo. Recomendaciones: WebP, ancho máximo 1600 px, `alt` que describa la imagen, `width` y `height`
+reales, y `loading="lazy"` en todas las que no estén arriba de todo (en las del celular de la portada, sin `lazy`).
+
+Dónde sigue habiendo bloques de color a propósito:
+- `emprendimientos.html`: las otras tres variantes (indumentaria, cosmética y velas) y 4 de los 6 productos de
+  la variante de blanquería. Las fotos de cada una se definen en `VARIANTS`, en `js/script.js`.
+- `inmobiliarias.html`: la ficha usa la foto de la propiedad elegida, y la tira de miniaturas está oculta
+  porque no hay varias fotos por propiedad.
 
 ## Configuración
 
@@ -61,7 +69,7 @@ reales, y `loading="lazy"` en todas las que no estén arriba de todo.
 
 Cada página tiene title y description propios, canonical, Open Graph, Twitter Card, una sola h1, migas de pan
 y datos estructurados Schema.org (Organization y WebSite en el index; WebPage, BreadcrumbList y Service en
-cada rubro). `sitemap.xml` lista las 7 páginas.
+cada rubro). `sitemap.xml` lista las 8 páginas.
 
 **SEO local:** no se agregó ninguna ubicación. Cuando quieras apuntar a una zona (por ejemplo Buenos Aires,
 CABA o Provincia de Buenos Aires):
@@ -78,6 +86,7 @@ Después de publicar, conviene cargar el sitemap en Google Search Console.
 - La lista "Qué podría tener tu web" usa `data-key` en cada botón y `data-part` en la parte de la demo
   que se ilumina. Si agregás una parte nueva, usá la misma palabra en los dos.
 - Los productos de `emprendimientos.html` (y sus cuatro variantes) están en `js/script.js`, en `VARIANTS`.
+- Los turnos de `belleza.html` y las reservas de `espacios.html` usan los mismos grupos de botones (`#dm-service`, `#dm-pro`, `#dm-days`, `#dm-slots`). En `espacios.html`, cada espacio tiene en `data-busy` los horarios ocupados, separados por coma. El porcentaje de seña está en `data-senia` del botón de reservar.
 - Los botones de las demos no envían nada: muestran un aviso explicando qué harían en una web real.
 - Todas las demos están rotuladas como concepto. Los negocios son inventados; si cambiás nombres,
   mantené el aviso "No es un cliente real".
